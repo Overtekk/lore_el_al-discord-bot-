@@ -16,7 +16,8 @@ players_id = [
     228948435259228160, # Astyell
     296298507554521090, # Heretikk
     177835554304557056, # LadyGuilty
-    745032303327182939  # Shadox
+    745032303327182939, # Shadox
+    303279758941356035  # Neloryx
 ]
 
 
@@ -57,7 +58,7 @@ class GuessNumber(commands.Cog):
 
                     embed = discord.Embed(
                         title="🎲 GuessTheNumber have started!",
-                        description=f"Guess the secret number between **{self.min_n}** and **{self.max_n}** included.\nPoints are awarded by the number of players that hasn't played.\n\nGood luck!",
+                        description=f"Guess the secret number between **{self.min_n}** and **{self.max_n}** included.\nPoints are awarded by the number of players that hasn't played.\nUse /guess 'number' to play\n\nGood luck!",
                         color=discord.Color.blue()
                     )
 
