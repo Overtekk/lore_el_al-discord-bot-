@@ -53,7 +53,7 @@ class GuessNumber(commands.Cog):
         # === Starting the game ===
         if h_now.hour == self.start_hour:
             if self.secret_number is None:
-                    self.start_game_logic()
+                    await self.start_game_logic()
 
                     embed = discord.Embed(
                         title="🎲 GuessTheNumber have started!",
@@ -165,7 +165,9 @@ class GuessNumber(commands.Cog):
                 return
             return
 
+
     @app_commands.command(name="leaderboard", description="Show the top players")
+    @app_commands.checks.cooldown(1, 60.0)
     async def leaderboard(self, interaction: discord.Interaction):
         data = database.get_leaderboard()
 
@@ -175,6 +177,12 @@ class GuessNumber(commands.Cog):
 
         embed = discord.Embed(title="🏆 Leaderboard", description=msg_txt, color=discord.Color.gold())
         await interaction.response.send_message(embed=embed)
+
+    @leaderboard.error
+    async def on_leaderboard_error(self, interaction: discord.Interaction, error: app_commands.AppCommandError):
+        if isinstance(error, app_commands.CommandOnCooldown):
+            await interaction.response.send_message(f"⏳ Please wait {int(error.retry_after)} seconds before using this command again.", ephemeral=True)
+
 
     @app_commands.command(name="start", description="🔴 ADMIN: Force the start of the game")
     async def start(self, interaction: discord.Interaction):
@@ -186,7 +194,7 @@ class GuessNumber(commands.Cog):
             await interaction.response.send_message("Game already started", ephemeral=True)
             return
 
-        self.start_game_logic()
+        await self.start_game_logic()
         await interaction.response.send_message("✅ Game launched", ephemeral=True)
         channel = self.bot.get_channel(self.game_channel_id)
         embed = discord.Embed(
