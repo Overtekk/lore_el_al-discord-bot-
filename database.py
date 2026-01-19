@@ -14,57 +14,46 @@ def create_tables():
         """)
         connect.commit()
 
-def register_player(user_id):
+def check_player_status(user_id):
     with sqlite3.connect(db_name) as connect:
         cursor = connect.cursor()
-        sql = "INSERT OR IGNORE INTO players (user_id) VALUES (?)"
-        cursor.execute(sql, (user_id,))
-        connect.commit()
 
-def is_player_registered(user_id):
-    with sqlite3.connect(db_name) as connect:
-        cursor = connect.cursor()
-        sql = "SELECT user_id FROM players WHERE user_id = ?"
-        cursor.execute(sql, (user_id,))
+        cursor.execute("SELECT daily_attempt FROM players WHERE user_id = ?", (user_id,))
         result = cursor.fetchone()
-        return result is not None
 
-def has_played_today(user_id):
-    with sqlite3.connect(db_name) as connect:
-        cursor = connect.cursor()
-        sql = "SELECT daily_attempt FROM players WHERE user_id = ?"
-        cursor.execute(sql, (user_id,))
-        result = cursor.fetchone()
         if result is None:
-            return True
-        if result[0] == 1:
-            return True
-        return False
+            cursor.execute("INSERT INTO players (user_id, score, daily_attempt) VALUES (?, 0, 0)", (user_id,))
+            connect.commit()
+            return False
+
+        return result[0] == 1
 
 def mark_as_played(user_id):
     with sqlite3.connect(db_name) as connect:
         cursor = connect.cursor()
-        sql = "UPDATE players SET daily_attempt = 1 where user_id = ?"
-        cursor.execute(sql, (user_id,))
+        cursor.execute("UPDATE players SET daily_attempt = 1 WHERE user_id = ?", (user_id,))
         connect.commit()
 
 def add_score(user_id, points):
     with sqlite3.connect(db_name) as connect:
         cursor = connect.cursor()
-        sql = "UPDATE players SET score = score + ? WHERE user_id = ?"
-        cursor.execute(sql, (user_id, points))
+        cursor.execute("UPDATE players SET score = score + ? WHERE user_id = ?", (points, user_id))
         connect.commit()
 
 def reset_daily_attempts():
     with sqlite3.connect(db_name) as connect:
         cursor = connect.cursor()
-        sql = "UPDATE players SET daily_attempt = 0"
-        cursor.execute(sql)
+        cursor.execute("UPDATE players SET daily_attempt = 0")
         connect.commit()
 
 def get_leaderboard():
     with sqlite3.connect(db_name) as connect:
         cursor = connect.cursor()
-        sql = "SELECT user_id, score FROM players ORDER BY score DESC LIMIT 20"
-        cursor.execute(sql)
+        cursor.execute("SELECT user_id, score FROM players ORDER BY score DESC LIMIT 20")
         return cursor.fetchall()
+
+def count_remaining_players():
+    with sqlite3.connect(db_name) as connect:
+        cursor = connect.cursor()
+        cursor.execute("SELECT COUNT(*) FROM players WHERE daily_attempt = 0")
+        return cursor.fetchone()[0]
