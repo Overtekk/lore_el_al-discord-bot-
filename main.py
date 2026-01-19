@@ -35,6 +35,8 @@ class MyClient(commands.Bot):
         database.create_tables()
         await self.load_extension("cogs.game")
         print("Module GuessTheNumber loaded!")
+        await self.load_extension("cogs.sus")
+        print("Module Sus loaded!")
         await self.tree.sync()
 
     async def on_ready(self):
